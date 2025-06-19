@@ -1,3 +1,7 @@
+<?php
+    use App\Models\Product\PricingService;
+?>
+
 @extends('layouts.app')
 
 @section('title', 'Product Inventory')
@@ -26,9 +30,8 @@
                 <p>{{ $product->description }}</p>
                 <p>Original Price: £{{ number_format($product->price, 2) }}</p>
                 <p>
-                    Final Price:
-                    £{{ number_format($product->getDiscountedPrice($discountPercent), 2) }}
-                    @if($product->getDiscountedPrice($discountPercent) < $product->price)
+                    Final Price: £{{ number_format($product->final_price, 2) }}
+                    @if($product->final_price < $product->price)
                         (discounted)
                     @endif
                 </p>

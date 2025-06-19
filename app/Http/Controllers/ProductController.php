@@ -4,28 +4,23 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Services\PromoService;
+use App\Services\PricingService;
 
 class ProductController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, PromoService $promoService, PricingService $pricingService)
     {
         $products = Product::all();
 
-        $validPromoCodes = [
-            'SP3CI4LCU5T0M3R' => 0.10, 
-            'H1R3H477Y' => 0.99, 
-        ];
-
         $promoCode = $request->query('promo_code');
-        $discountPercent = 0;
+        $promoDiscount = $promoService->getDiscountFromCode($promoCode);
 
-        if ($promoCode && array_key_exists(strtoupper($promoCode), $validPromoCodes)) {
-            $discountPercent = $validPromoCodes[strtoupper($promoCode)];
-        } else {
-            $promoCode = null; 
-        }
+        $products->each(function ($product) use ($promoDiscount, $pricingService) {
+            $product->final_price = $pricingService->calculateFinalPrice($product, $promoDiscount);
+        });
 
-        return view('products.index', compact('products', 'promoCode', 'discountPercent'));
+        return view('products.index', compact('products', 'promoCode', 'promoDiscount'));
     }
 
     public function create()
