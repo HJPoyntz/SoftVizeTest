@@ -5,20 +5,17 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Services\PromoService;
-use App\Services\PricingService;
+use App\Services\ProductService;
 
 class ProductController extends Controller
 {
-    public function index(Request $request, PromoService $promoService, PricingService $pricingService)
+    public function index(Request $request, PromoService $promoService, ProductService $productDisplayService)
     {
-        $products = Product::all();
-
         $promoCode = $request->query('promo_code');
         $promoDiscount = $promoService->getDiscountFromCode($promoCode);
 
-        $products->each(function ($product) use ($promoDiscount, $pricingService) {
-            $product->final_price = $pricingService->calculateFinalPrice($product, $promoDiscount);
-        });
+        $products = Product::all();
+        $products = $productDisplayService->calculateProducts($products, $promoDiscount);
 
         return view('products.index', compact('products', 'promoCode', 'promoDiscount'));
     }
